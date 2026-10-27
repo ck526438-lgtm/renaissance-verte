@@ -1,0 +1,9 @@
+# Fichiers de travail (tests, captures) — jamais publiés
+/shots/
+/tools/
+/tmpchrome*/
+tmp-*
+/test.html
+/shot.html
+/gif.html
+/diag.html
