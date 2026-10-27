@@ -295,6 +295,23 @@ mark.kw.lit{background:var(--gold);color:#12200f;border-bottom-color:transparent
 .wstat em{color:var(--gold);font-style:normal}
 .wcard .chip{padding:5px 6px}
 .wcard .chip b{font-size:14px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tab{font-family:var(--px);font-size:8px;color:#9fc0a0;background:#0d1a12;border:0;padding:9px 12px;cursor:pointer;box-shadow:inset 0 0 0 2px #2b4632}
+.tab:hover{color:#e9f2e0}
+.tab.on{background:var(--gold);color:#12231a;box-shadow:inset 0 0 0 2px #7f6321}
+.bar{display:inline-block;width:88px;height:8px;background:#08130d;box-shadow:inset 0 0 0 1px #33543d;vertical-align:middle}
+.bar i{display:block;height:100%;background:#66c15a}
+.needrow{display:grid;grid-template-columns:1fr;gap:3px;margin:2px 0}
+.nb{display:flex;align-items:center;gap:7px;font-size:14px;color:#8fae8b}
+.nb em{font-family:var(--px);font-size:7px;font-style:normal;min-width:52px;color:var(--moss)}
+.tier{font-style:normal;color:var(--gold);font-size:13px}
+.kidtag{font-style:normal;font-family:var(--px);font-size:6px;color:#12231a;background:#9ed07a;padding:2px 4px}
+.lack{font-style:normal;color:#e0674c;font-size:14px}
+.wcard.focus{box-shadow:inset 0 0 0 2px var(--gold)}
+.chip.dim{opacity:.45}
+.homelist{display:grid;gap:6px;margin-top:14px}
+.home{font-size:16px;color:#a9c9a4;background:#0f1c14;padding:9px 11px;box-shadow:inset 0 0 0 2px #2b4632;line-height:1.35}
+.home b{color:var(--gold);font-weight:400}
 .mapwrap{display:grid;gap:14px;grid-template-columns:minmax(0,1fr) 240px;margin-top:18px}
 #bigmap{width:100%;background:#08130d;box-shadow:inset 0 0 0 2px #2b4632}
 .mlist{display:grid;gap:6px;align-content:start;font-size:17px}
@@ -416,9 +433,10 @@ mark.kw.lit{background:var(--gold);color:#12200f;border-bottom-color:transparent
 <div class="ov" id="ovWork" role="dialog" aria-modal="true" aria-label="Partage des tâches">
   <div class="card">
     <button class="x" data-close aria-label="Fermer">X</button>
-    <p class="step">S’organiser pour aller plus vite</p>
-    <h2>LES TÂCHES DU CAMP</h2>
-    <p class="sub">Chaque survivant a un métier. <span id="workCap"></span></p>
+    <p class="step">S’organiser, se faire confiance</p>
+    <h2>LE CAMP ET SES GENS</h2>
+    <div class="tabs" id="workTabs"></div>
+    <p class="sub"><span id="workCap"></span></p>
     <div class="work-grid" id="workGrid"></div>
     <p class="sub" style="margin-top:16px"><b>La récolte du camp :</b> <span id="workStash"></span></p>
   </div>
@@ -446,6 +464,7 @@ mark.kw.lit{background:var(--gold);color:#12200f;border-bottom-color:transparent
     <h2>CODEX DES LANGUES</h2>
     <p class="sub">Un mot par survivant, avec sa prononciation. <span id="codexCount"></span></p>
     <div class="grid-cards" id="codexGrid"></div>
+    <div id="codexHome"></div>
   </div>
 </div>
 
@@ -465,6 +484,7 @@ mark.kw.lit{background:var(--gold);color:#12200f;border-bottom-color:transparent
       <div class="st"><b>7</b><p><em>Prendre le large.</em> Un <em>radeau de pêche</em> se pose sur l'eau. <span class="kbd">Espace</span> dessus pour monter, <span class="kbd">Espace</span> encore vers la rive pour accoster — le radeau vient avec toi. Au large, la jauge est plus large et le poisson deux fois plus généreux.</p></div>
       <div class="st"><b>8</b><p><em>Les traces.</em> Des empreintes dorées traversent le monde. Suis-les ; <span class="kbd">M</span> te montre d'où vient chaque survivant. Quand tu le rattrapes, il te parle <em>dans sa langue</em> : choisis la bonne réponse grâce aux mots du lexique.</p></div>
       <div class="st"><b>9</b><p><em>La nuit.</em> La chaleur tombe vite, encore plus sur l'eau. Reste près du feu ou sous un abri. Un survivant qui te rejoint t'offre un savoir et agrandit la caravane.</p></div>
+      <div class="st"><b>10</b><p><em>Le camp est une société.</em> Chaque survivant a une <em>confiance</em> envers toi et quatre <em>besoins</em> — faim, soif, repos, moral. Il les règle seul : il va manger à la réserve, boire, dormir au feu, ou aller causer avec un voisin. <span class="kbd">Espace</span> à son côté (ou l'onglet <em>Échanges</em> de <span class="kbd">T</span>) ouvre le <em>marché du jour</em> : il propose un troc dont le taux s'améliore avec la confiance, et tu peux aussi simplement lui offrir à manger. Deux gens qui s'apprécient, se font confiance et trouvent un toit se mettent <em>en couple</em> — puis le camp voit naître des <em>enfants</em>, qui grandissent jour après jour et finissent par travailler avec les autres. Le carnet <span class="kbd">L</span> garde la mémoire des foyers.</p></div>
     </div>
   </div>
 </div>
@@ -966,14 +986,16 @@ const INV_ORDER=['wood','stone','flint','fibre','leaf','berry','fish','cooked','
 const STORE='renaissance-verte-v2';
 const DEF_PROG={chop:0,mine:0,fire:0,bench:0,roof:0,bed:0,catch:0,chest:0,torch:0,wall:0,house:0,boat:0,hunt:0,trap:0};
 let state={ seed:0, solved:{}, inv:{}, stats:{hunger:100,thirst:100,energy:100,warm:100}, clock:{d:1,t:6.5}, built:0, quest:0, px:0, py:0, sound:true, seen:false,
-  prog:Object.assign({},DEF_PROG), job:{}, stash:{}, camp:null, anim:[] };
+  prog:Object.assign({},DEF_PROG), job:{}, stash:{}, camp:null, anim:[],
+  trust:{}, need:{}, bond:{}, couple:{}, kids:[], offer:{} };
 function saveGame(){
   try{
     if(typeof P!=='undefined'&&P.x){ state.px=P.x; state.py=P.y; }
     const d=[]; dirty.forEach(function(v,i){ d.push([i,v[0],v[1],Math.round(v[2])]); });
     localStorage.setItem(STORE, JSON.stringify({seed:state.seed,solved:state.solved,inv:state.inv,stats:state.stats,clock:state.clock,built:state.built,quest:state.quest,
       px:Math.round(state.px),py:Math.round(state.py),sound:state.sound,seen:state.seen,prog:state.prog,dirty:d,
-      job:state.job,stash:state.stash,camp:state.camp,anim:ANI.map(function(a){ return [a.k,Math.round(a.x),Math.round(a.y)]; })}));
+      job:state.job,stash:state.stash,camp:state.camp,anim:ANI.map(function(a){ return [a.k,Math.round(a.x),Math.round(a.y)]; }),
+      trust:state.trust,need:state.need,bond:state.bond,couple:state.couple,kids:state.kids,offer:state.offer}));
   }catch(e){}
 }
 function loadGame(){
@@ -986,6 +1008,8 @@ function loadGame(){
     if(!state.job) state.job={}; if(!state.stash) state.stash={};
     if(!state.anim) state.anim=[];
     if(!state.clock) state.clock={d:1,t:6.5};
+    ['trust','need','bond','couple','offer'].forEach(function(k){ if(!state[k]||typeof state[k]!=='object') state[k]={}; });
+    if(!Array.isArray(state.kids)) state.kids=[];
     return true;
   }catch(e){ return false; }
 }
@@ -1212,11 +1236,14 @@ const FOLLOW=[];
 function syncCaravan(){
   FOLLOW.length=0;
   const cap=popCap(); let k=0;
-  TRAVELERS.forEach(function(t){
-    if(!state.solved[t.id]) return;
-    FOLLOW.push({id:t.id,pal:t.pal,name:t.name,x:P.x,y:P.y-6,work:k>=cap,cd:2+Math.random()*4,tx:null,ty:null,ti:null});
+  roster().forEach(function(p){
+    if(state.trust[p.id]===undefined) state.trust[p.id]=p.kid?46:18;
+    needOf(p.id);
+    FOLLOW.push({id:p.id,pal:p.pal,name:p.name,x:P.x,y:P.y-6,work:k>=cap,cd:2+Math.random()*4,tx:null,ty:null,ti:null,
+      drive:'suivre',think:Math.random(),chat:0,eat:0,drink:0,asleep:0,hint:0,kid:!!p.kid});
     k++;
   });
+  syncKids();
   const w=$('#btnWork'); if(w) w.classList.toggle('on',FOLLOW.some(function(f){ return f.work; }));
 }
 
@@ -1254,6 +1281,11 @@ function pressAct(){
     startFish(); return;
   }
   const f=front(), i=f.y*TW+f.x, o=objAt(f.x,f.y);
+  /* discuter / troquer avec un survivant à portée */
+  if([O.NONE,O.STUMP,O.WALL,O.ROOF,O.CATCH,O.CHEST,O.TORCH,O.HOUSE].indexOf(o)>=0){
+    const near=nearestPerson(P.x,P.y,TS*1.7);
+    if(near){ openTrade(near.id); return; }
+  }
   /* monter sur le radeau */
   if(o===O.BOAT){ boardBoat(i); return; }
   /* récolter un piège */
@@ -1384,6 +1416,7 @@ function doSleep(collapse){
     if(gain>0){ add('water',gain); toast('Collecteurs : +'+gain+' eau'); }
     const caught=huntTraps();
     if(caught>0) toast(caught+' piège'+(caught>1?'s ont pris':' a pris')+' cette nuit — reviens récolter');
+    onDawn();
     saveGame();
   });
 }
@@ -1724,26 +1757,500 @@ function huntTraps(){
   }
   return caught;
 }
+/* ==========================================================================
+   9.5 SOCIAL — confiance, besoins, liens, échanges, foyer
+   ========================================================================== */
+const TRUST_TIERS=[{min:0,n:'Méfiant'},{min:26,n:'Prudent'},{min:50,n:'Estimé'},{min:74,n:'Complice'},{min:90,n:'Indispensable'}];
+const NEED_TXT={food:'Faim',water:'Soif',rest:'Repos',cheer:'Moral'};
+const VAL={wood:1,stone:1,flint:2,fibre:1,leaf:1,berry:2,fish:3,cooked:5,meat:4,roast:7,hide:3,spear:5,water:2};
+const ROLE_WANT={b:['stone','flint','fibre'],c:['wood','fibre','leaf'],g:['wood','flint','spear'],p:['fibre','leaf','wood'],h:['spear','fibre','wood']};
+const ROLE_GIVE={b:['wood','leaf'],c:['stone','flint'],g:['berry','fibre','leaf'],p:['fish','cooked','water'],h:['roast','meat','hide']};
+const GIFT_FOOD=['roast','cooked','berry','fish','meat'];
+const KID_NAMES={
+  tomas:['Luca','Matilde','Rui','Inês'], ingrid:['Sander','Elin','Knut','Vilde'], yasmine:['Karim','Layla','Amir','Nour'],
+  eleni:['Nikos','Thalia','Yanis','Eirene'], arjun:['Dev','Anaya','Ravi','Meera'], zawadi:['Jabari','Zuri','Baraka','Amani'],
+  deniz:['Emir','Defne','Kaan','Elif'], hana:['Sora','Hina','Ren','Aoi'], sigrun:['Bjorn','Astrid','Leif','Solveig'],
+  kid:['Aube','Brise','Cendre','Source']
+};
+const KID_STAGES=['au berceau','enfant','adolescent','adulte'];
+let KID=[], socialAcc=6, workTab='travail', tradeId=null;
+
+function person(id){
+  for(let i=0;i<TRAVELERS.length;i++){ if(TRAVELERS[i].id===id) return TRAVELERS[i]; }
+  for(let i=0;i<state.kids.length;i++){ if(state.kids[i].id===id) return state.kids[i]; }
+  return null;
+}
+function kidAge(k){ return Math.max(0,state.clock.d-(k.born||1)); }
+function kidStage(k){ const a=kidAge(k); return a<1?0:(a<3?1:(a<5?2:3)); }
+function adults(){ return state.kids.filter(function(k){ return kidStage(k)===3; }); }
+function roster(){
+  const out=[];
+  TRAVELERS.forEach(function(t){ if(state.solved[t.id]) out.push({id:t.id,name:t.name,pal:t.pal,lang:t.lang,place:t.place,kid:false}); });
+  adults().forEach(function(k){ out.push({id:k.id,name:k.name,pal:k.pal,lang:'Né·e au camp',place:'Renaissance Verte',kid:true,age:kidAge(k)}); });
+  return out;
+}
+/* ---------- confiance ---------- */
+function trustOf(id){ const v=state.trust[id]; return v===undefined?18:v; }
+function trustTier(v){ let t=TRUST_TIERS[0]; TRUST_TIERS.forEach(function(x){ if(v>=x.min) t=x; }); return t; }
+function addTrust(id,d,why){
+  if(!person(id)||!d) return;
+  const before=trustOf(id), after=clamp(before+d,0,100);
+  if(after===before) return;
+  state.trust[id]=after;
+  const p=person(id);
+  if(trustTier(after).min>trustTier(before).min){
+    sfx.quest(); toast('<b>'+esc(p.name)+'</b> te voit désormais comme « '+trustTier(after).n+' »'+(why?' · '+esc(why):''),true);
+  } else if(d>=5&&Math.random()<0.45){
+    toast(esc(p.name)+' hoche la tête — c’est noté.');
+  }
+  socialAcc=Math.min(socialAcc,0.4);
+}
+/* ---------- besoins ---------- */
+function needOf(id){ let nd=state.need[id]; if(!nd){ nd=state.need[id]={food:76,water:76,rest:88,cheer:72}; } return nd; }
+function moodOf(id){ const nd=needOf(id); return Math.round((nd.food+nd.water+nd.rest+nd.cheer)/4*0.7+trustOf(id)*0.3); }
+function updateNeeds(dt){
+  const night=isNight(), ids=Object.keys(state.need);
+  for(let i=0;i<ids.length;i++){
+    const id=ids[i], nd=state.need[id];
+    nd.food=Math.max(0,nd.food-dt*0.085);
+    nd.water=Math.max(0,nd.water-dt*0.10);
+    nd.rest=Math.max(0,nd.rest-dt*(night?0.13:0.055));
+    const alone=!partnerOf(id)&&bestBondOf(id)<40;
+    nd.cheer=Math.max(0,nd.cheer-dt*0.045*(night?1.5:1)*(alone?1.6:1)*(trustOf(id)>=74?0.75:1));
+    if(homeCount()>0) nd.cheer=Math.min(100,nd.cheer+dt*0.022);
+  }
+}
+function homeCount(){ return (CNT[O.HOUSE]||0)+(CNT[O.ROOF]||0)+((CNT[O.BED]||0)>0?1:0); }
+function homeCap(){ return (CNT[O.HOUSE]||0)*2+((CNT[O.ROOF]||0)>0?1:0)+((CNT[O.BED]||0)>0?1:0); }
+function homeUsed(){ return Object.keys(state.couple).length+state.kids.length; }
+/* ---------- liens ---------- */
+function bondKey(a,b){ return a<b?a+'|'+b:b+'|'+a; }
+function bondOf(a,b){ return state.bond[bondKey(a,b)]||0; }
+function addBond(a,b,d){ if(a===b) return; const k=bondKey(a,b); state.bond[k]=clamp((state.bond[k]||0)+d,0,100); }
+function bondsOf(id){
+  const out=[];
+  for(const k in state.bond){
+    const parts=k.split('|'); if(parts[0]!==id&&parts[1]!==id) continue;
+    const other=parts[0]===id?parts[1]:parts[0];
+    if(!person(other)||!who(other)) continue;
+    out.push({id:other,v:state.bond[k],couple:!!state.couple[k]});
+  }
+  return out.sort(function(a,b){ return b.v-a.v; });
+}
+function bestBondOf(id){ const b=bondsOf(id); return b.length?b[0].v:0; }
+function partnerOf(id){ const b=bondsOf(id); for(let i=0;i<b.length;i++){ if(b[i].couple) return b[i].id; } return null; }
+/* ---------- échanges ---------- */
+function stashOf(id){ return Math.round(state.stash[id]||0); }
+function takeStock(k,q){
+  if(stashOf(k)<q) return false;
+  state.stash[k]=stashOf(k)-q; renderStash(); return true;
+}
+function makeOffer(id){
+  const role=jobOf(id), want=ROLE_WANT[role]||ROLE_WANT.b, give=ROLE_GIVE[role]||ROLE_GIVE.b;
+  const w=want.filter(function(k){ return n(k)>=2; })[0]||'wood';
+  const g=give.filter(function(k){ return stashOf(k)>=1; })[0];
+  if(!g) return null;
+  if(w===g) return null;
+  const mult=clamp(1.45-trustOf(id)/95,0.6,1.45);
+  const gq=Math.max(1,Math.min(3,1+Math.floor(trustOf(id)/38)));
+  const wq=clamp(Math.ceil(VAL[g]*gq*mult/Math.max(1,VAL[w])),1,8);
+  if(n(w)<wq) return null;
+  return {give:{k:g,q:gq},want:{k:w,q:wq},d:state.clock.d};
+}
+function offerOf(id){
+  let o=state.offer[id];
+  if(o&&o.d!==state.clock.d) o=null;
+  if(!o){ o=makeOffer(id); if(o) state.offer[id]=o; else delete state.offer[id]; }
+  return (o&&!o.done)?o:null;
+}
+function tradedToday(id){ const o=state.offer[id]; return !!o&&o.done&&o.d===state.clock.d; }
+function doTrade(id){
+  const o=offerOf(id); if(!o) return;
+  const p=person(id);
+  if(n(o.want.k)<o.want.q){ sfx.bad(); toast('Il te manque '+o.want.q+' '+ITEMS[o.want.k].n.toLowerCase()+' pour '+esc(p.name)); return; }
+  if(!takeStock(o.give.k,o.give.q)){ sfx.bad(); toast('La réserve du camp n’a plus assez de '+ITEMS[o.give.k].n.toLowerCase()+' pour '+esc(p.name)); return; }
+  add(o.want.k,-o.want.q); add(o.give.k,o.give.q);
+  state.offer[id]={k:o.want.k,g:o.give.k,d:state.clock.d,done:1};
+  needOf(id).cheer=Math.min(100,needOf(id).cheer+14);
+  addTrust(id,6,'un marché tenu');
+  sfx.catch(); toast('Échange avec <b>'+esc(p.name)+'</b> : −'+o.want.q+' '+ITEMS[o.want.k].n.toLowerCase()+' · +'+o.give.q+' '+ITEMS[o.give.k].n.toLowerCase());
+  renderInv(); renderWork(); saveGame();
+}
+function giveGift(id,k){
+  const p=person(id), nd=needOf(id);
+  if(n(k)<1){ sfx.bad(); toast('Plus de '+ITEMS[k].n.toLowerCase()+' à offrir'); return; }
+  add(k,-1);
+  let d=3, msg='un cadeau';
+  if(GIFT_FOOD.indexOf(k)>=0&&nd.food<72){ nd.food=Math.min(100,nd.food+34+VAL[k]*2); d=9; msg='a le ventre plein'; }
+  else if(k==='water'&&nd.water<72){ nd.water=Math.min(100,nd.water+38); d=7; msg='a soif de moins'; }
+  else if(k==='spear'){ d=6; }
+  nd.cheer=Math.min(100,nd.cheer+10);
+  addTrust(id,d,msg);
+  sfx.pick(); toast('<b>'+esc(p.name)+'</b> reçoit '+ITEMS[k].n.toLowerCase()+' — '+(d>=7?'ça compte beaucoup pour lui/elle.':'ça compte.'));
+  renderInv(); renderWork(); saveGame();
+}
+/* ---------- le choix : l’IA à élans ---------- */
+function driveScore(id,atCamp){
+  const nd=needOf(id), night=isNight(), s=[];
+  s.push({k:'travail',v:atCamp?30:0});
+  if(atCamp&&nd.food<54) s.push({k:'manger',v:(54-nd.food)*1.6});
+  if(atCamp&&nd.water<50) s.push({k:'boire',v:(50-nd.water)*1.6});
+  if(atCamp&&nd.rest<(night?46:26)) s.push({k:'dormir',v:((night?46:26)-nd.rest)*(night?1.5:1)});
+  if(nd.cheer<54) s.push({k:'causer',v:(54-nd.cheer)*1.05});
+  if(offerOf(id)&&atCamp){ const e=who(id); if(!e||!(e.trocCd>0)) s.push({k:'troc',v:34}); }
+  s.push({k:'suivre',v:atCamp?6:34});
+  s.sort(function(a,b){ return b.v-a.v; });
+  return s[0].k;
+}
+function nearestWaterTile(tx,ty,bad){
+  const V=[[0,1],[0,-1],[1,0],[-1,0]];
+  for(let r=1;r<=10;r++){
+    for(let a=0;a<28;a++){
+      const ang=a/28*6.2832, x=Math.round(tx+Math.cos(ang)*r), y=Math.round(ty+Math.sin(ang)*r*0.85);
+      if(x<1||y<1||x>=TW-1||y>=TH-1) continue;
+      if(bad&&bad[x+','+y]) continue;
+      if(tileAt(x,y)!==T.WATER) continue;
+      for(let d=0;d<4;d++){
+        const sx=x+V[d][0], sy=y+V[d][1];
+        if(bad&&bad[sx+','+sy]) continue;
+        if(standable(sx,sy)&&canStandAt(sx*TS+8,sy*TS+8)) return {x:x,y:y,sx:sx,sy:sy};
+      }
+    }
+  }
+  return null;
+}
+function eatFromStash(f){
+  const got=GIFT_FOOD.filter(function(k){ return stashOf(k)>0; })[0];
+  if(got){ state.stash[got]=stashOf(got)-1; renderStash(); }
+  else if(stashOf('leaf')>0){ state.stash.leaf=stashOf('leaf')-1; renderStash(); }
+  else return false;
+  const nd=needOf(f.id);
+  nd.food=Math.min(100,nd.food+(got?30+VAL[got]*2:16));
+  nd.cheer=Math.min(100,nd.cheer+4);
+  f.eat=1.6;
+  return true;
+}
+function socialAct(f,dt,cp){
+  const nd=needOf(f.id), hx=cp[0]*TS+8, hy=cp[1]*TS+8;
+  if(f.drive==='manger'){
+    if(dist(f.x,f.y,hx,hy)>TS*1.6){ followWalk(f,dt,{x:hx,y:hy}); return true; }
+    if(!eatFromStash(f)){ f.drive='travail'; } return true;
+  }
+  if(f.drive==='boire'){
+    if(!f.wt){ f.wt=nearestWaterTile(cp[0],cp[1],f.wtBad); f.wtT=0; f.wtFrom=null; }
+    if(!f.wt){ nd.water=Math.max(nd.water,58); f.drive='travail'; return true; }
+    f.wtT+=dt;
+    const wx=f.wt.sx*TS+8, wy=f.wt.sy*TS+8, d=dist(f.x,f.y,wx,wy);
+    if(f.wtFrom===null) f.wtFrom=d;
+    if(d>TS*1.2){
+      if(f.wtT>6&&d>f.wtFrom-45){
+        f.wtBad=f.wtBad||{}; f.wtBad[f.wt.sx+','+f.wt.sy]=1; f.wt=null;
+        if(Object.keys(f.wtBad).length>6){ f.wtBad={}; nd.water=Math.max(nd.water,58); f.drive='travail'; }
+        return true;
+      }
+      followWalk(f,dt,{x:wx,y:wy}); return true;
+    }
+    nd.water=Math.min(100,nd.water+46); f.drink=1.4; f.wt=null; f.wtBad={}; f.drive='travail'; return true;
+  }
+  if(f.drive==='dormir'){
+    const bed=nearTypeOf(O.BED,cp);
+    const tx=bed?bed.x:cp[0], ty=bed?bed.y:cp[1];
+    if(dist(f.x,f.y,tx*TS+8,ty*TS+8)>TS*1.5){ followWalk(f,dt,{x:tx*TS+8,y:ty*TS+8}); return true; }
+    f.asleep=Math.min(26,(f.asleep||0)+dt); nd.rest=Math.min(100,nd.rest+dt*3.4);
+    if(nd.rest>92||f.asleep>24){ f.asleep=0; f.drive='travail'; }
+    return true;
+  }
+  if(f.drive==='causer'){
+    const b=bondsOf(f.id)[0];
+    if(!b){ nd.cheer=Math.min(100,nd.cheer+10); f.drive='travail'; return true; }
+    const o=who(b.id);
+    if(!o){ f.drive='travail'; return true; }
+    if(dist(f.x,f.y,o.x,o.y)>TS*1.7){ followWalk(f,dt,{x:o.x,y:o.y}); return true; }
+    f.chat=2.4; o.chat=2.4;
+    nd.cheer=Math.min(100,nd.cheer+dt*7);
+    if(o.id!==f.id){ needOf(o.id).cheer=Math.min(100,needOf(o.id).cheer+dt*7); addBond(f.id,o.id,dt*1.5); }
+    if(nd.cheer>86) f.drive='travail';
+    return true;
+  }
+  if(f.drive==='troc'){
+    f.trocT=(f.trocT||0)+dt;
+    if(dist(f.x,f.y,P.x,P.y-6)>TS*1.8){ followWalk(f,dt,{x:P.x,y:P.y-6}); return true; }
+    f.hint=1;
+    if(f.trocT>9||!offerOf(f.id)){ f.trocCd=34; f.trocT=0; f.drive='travail'; }
+    return true;
+  }
+  return false;
+}
+function who(id){
+  for(let i=0;i<FOLLOW.length;i++){ if(FOLLOW[i].id===id) return FOLLOW[i]; }
+  for(let i=0;i<KID.length;i++){ if(KID[i].id===id) return KID[i]; }
+  return null;
+}
+function nearTypeOf(o,cp){
+  for(let r=1;r<=8;r++){
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(Math.abs(dx)!==r&&Math.abs(dy)!==r) continue;
+      const x=cp[0]+dx,y=cp[1]+dy;
+      if(x<1||y<1||x>=TW-1||y>=TH-1) continue;
+      if(objAt(x,y)===o) return {x:x,y:y};
+    }
+  }
+  return null;
+}
+function updateFollowers(dt){
+  const cp=campPos();
+  for(let i=0;i<FOLLOW.length;i++){
+    const f=FOLLOW[i];
+    if(f.chat>0) f.chat-=dt;
+    if(f.eat>0) f.eat-=dt;
+    if(f.drink>0) f.drink-=dt;
+    if(f.trocCd>0) f.trocCd-=dt;
+    f.think=(f.think||0)-dt;
+    if(f.think<=0){
+      f.think=1.2+Math.random()*1.1;
+      f.hint=0;
+      if(f.work){ f.drive=cp?driveScore(f.id,true):'travail'; if(f.drive==='travail'){ f.tx=null; } }
+      else f.drive=driveScore(f.id,false);
+      if(f.drive!=='boire'){ f.wt=null; f.wtT=0; }
+      if(f.drive!=='troc') f.trocT=0;
+    }
+    if(f.work){
+      if(!cp||f.drive==='travail'||f.drive==='suivre'){ campWorker(f,dt); continue; }
+      if(socialAct(f,dt,cp)) continue;
+      campWorker(f,dt); continue;
+    }
+    if(socialAct(f,dt,cp||[Math.floor(P.x/TS),Math.floor(P.y/TS)])) continue;
+    const idx=Math.min(HIST.length-1,(i+2)*14);
+    const want=HIST[idx]||{x:P.x,y:P.y-6};
+    followWalk(f,dt,want);
+  }
+  updateKids(dt);
+}
+/* ---------- foyer : couples, naissances, enfants ---------- */
+function onDawn(){
+  const ids=roster().map(function(p){ return p.id; });
+  for(let i=0;i<ids.length;i++){
+    const nd=needOf(ids[i]);
+    let bad=0;
+    if(nd.food<12) bad++;
+    if(nd.water<12) bad++;
+    if(nd.cheer<12) bad++;
+    if(bad) addTrust(ids[i],-bad*2,'la nuit a été dure');
+    nd.cheer=Math.min(100,nd.cheer+8);
+    for(let j=i+1;j<ids.length;j++){
+      const a=ids[i], b=ids[j];
+      if(bondOf(a,b)>0) addBond(a,b,-0.6);
+    }
+  }
+  for(const k in state.offer) delete state.offer[k];
+  tryCouples(); tryBirths();
+  syncCaravan();
+  socialAcc=0;
+}
+function tryCouples(){
+  const ids=roster().filter(function(p){ return !partnerOf(p.id); }).map(function(p){ return p.id; });
+  if(homeUsed()>=homeCap()) return;
+  let best=null,bv=69;
+  for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
+    const a=ids[i], b=ids[j];
+    if(a===b||isCouple(a,b)) continue;
+    if(trustOf(a)<55||trustOf(b)<55) continue;
+    const v=bondOf(a,b); if(v>bv) { bv=v; best=[a,b]; }
+  }
+  if(!best) return;
+  state.couple[bondKey(best[0],best[1])]=state.clock.d;
+  addBond(best[0],best[1],12);
+  needOf(best[0]).cheer=100; needOf(best[1]).cheer=100;
+  addTrust(best[0],8,'un toit à deux'); addTrust(best[1],8,'un toit à deux');
+  const A=person(best[0]), B=person(best[1]);
+  sfx.win(); toast('<b>'+esc(A.name)+'</b> et <b>'+esc(B.name)+'</b> partagent désormais un toit — il reste '+Math.max(0,homeCap()-homeUsed())+' place(s) au foyer.',true);
+}
+function isCouple(a,b){ return !!state.couple[bondKey(a,b)]; }
+function tryBirths(){
+  if(homeUsed()>=homeCap()) return;
+  const keys=Object.keys(state.couple);
+  for(let i=0;i<keys.length;i++){
+    const parts=keys[i].split('|'), a=parts[0], b=parts[1];
+    if(!person(a)||!person(b)) continue;
+    if(state.kids.some(function(k){ return k.p[0]===a&&k.p[1]===b; })) continue;
+    if(state.clock.d-(state.couple[keys[i]]||1)<2) continue;
+    const na=needOf(a), nb=needOf(b);
+    if(na.food<45||nb.food<45||na.rest<40||nb.rest<40||trustOf(a)<62||trustOf(b)<62) continue;
+    birth(a,b); return;
+  }
+}
+function birth(a,b){
+  const A=person(a), B=person(b);
+  const pool=(KID_NAMES[a]||KID_NAMES.kid).concat(KID_NAMES[b]||[]);
+  const name=pool[Math.floor(Math.random()*pool.length)];
+  const kid={ id:'k'+(state.kids.length+1)+'d'+state.clock.d, name:name, born:state.clock.d, p:[a,b],
+    pal:{H:A.pal.H,s:Math.random()<0.5?A.pal.s:B.pal.s,C:B.pal.C,P:Math.random()<0.5?A.pal.P:B.pal.P},
+    x:P.x,y:P.y-6 };
+  state.kids.push(kid);
+  state.trust[kid.id]=46;
+  addTrust(a,10,'un enfant du camp'); addTrust(b,10,'un enfant du camp');
+  needOf(a).cheer=100; needOf(b).cheer=100;
+  syncKids();
+  sfx.win(); toast('<b>'+esc(A.name)+'</b> et <b>'+esc(B.name)+'</b> accueillent <b>'+esc(name)+'</b>. Le camp a une voix de plus.',true);
+  checkQuests();
+}
+function syncKids(){
+  KID.length=0;
+  state.kids.forEach(function(k){
+    if(kidStage(k)===3) return;
+    const cp=campPos();
+    const e={ id:k.id,name:k.name,pal:k.pal,born:k.born,p:k.p,x:k.x||(cp?cp[0]*TS+8:P.x),y:k.y||(cp?cp[1]*TS+8:P.y),
+      drive:'jeu',cd:1+Math.random()*3,tx:null,ty:null,chat:0 };
+    if(!e.x) e.x=P.x; if(!e.y) e.y=P.y;
+    KID.push(e);
+  });
+}
+function updateKids(dt){
+  const cp=campPos();
+  for(let i=0;i<KID.length;i++){
+    const k=KID[i], st=kidStage(k);
+    if(k.chat>0) k.chat-=dt;
+    if(!cp){ continue; }
+    k.cd-=dt;
+    if(k.cd<=0){
+      k.cd=2.5+Math.random()*4;
+      const home=st===3;
+      if(home){ k.tx=null; }
+      else {
+        const r=Math.random();
+        if(r<0.45&&st>0){ k.tx=cp[0]+Math.round((Math.random()*8)-4); k.ty=cp[1]+Math.round((Math.random()*6)-3); }
+        else { k.tx=null; }
+      }
+    }
+    if(k.tx!==null){
+      if(!standable(k.tx,k.ty)){ k.tx=null; }
+      else {
+        followWalk(k,dt,{x:k.tx*TS+8,y:k.ty*TS+8});
+        if(dist(k.x,k.y,k.tx*TS+8,k.ty*TS+8)<TS*1.2) k.tx=null;
+        continue;
+      }
+    }
+    const want=cp?[cp[0]*TS+8+((i%3)-1)*14,cp[1]*TS+8+((i/3|0))*12]:[P.x,P.y-6];
+    followWalk(k,dt,{x:want[0],y:want[1]});
+  }
+}
+function socialTick(dt){
+  updateNeeds(dt);
+  socialAcc-=dt;
+  if(socialAcc>0) return;
+  socialAcc=5;
+  const ids=roster().map(function(p){ return p.id; }), cp=campPos();
+  if(!cp) return;
+  for(let i=0;i<ids.length;i++){
+    for(let j=i+1;j<ids.length;j++){
+      const a=who(ids[i]), b=who(ids[j]); if(!a||!b) continue;
+      if(dist(a.x,a.y,b.x,b.y)<TS*5){
+        addBond(ids[i],ids[j],0.5);
+        if(Math.random()<0.25){ needOf(ids[i]).cheer=Math.min(100,needOf(ids[i]).cheer+1.2); needOf(ids[j]).cheer=Math.min(100,needOf(ids[j]).cheer+1.2); }
+      }
+    }
+  }
+  if(Math.random()<0.4){
+    const w=roster().filter(function(p){ return jobOf(p.id); });
+    if(w.length>1){
+      const A=w[Math.floor(Math.random()*w.length)], B=w[Math.floor(Math.random()*w.length)];
+      if(A.id!==B.id&&bondOf(A.id,B.id)>34){
+        const ka=(ROLE_GIVE[jobOf(A.id)]||['leaf'])[0], kb=(ROLE_GIVE[jobOf(B.id)]||['leaf'])[0];
+        if(ka!==kb&&stashOf(ka)>2&&stashOf(kb)>2){ state.stash[ka]=stashOf(ka)-1; state.stash[kb]=stashOf(kb)+1; renderStash(); }
+      }
+    }
+  }
+}
+function nearestPerson(x,y,rad){
+  let best=null,bd=rad;
+  for(let i=0;i<FOLLOW.length;i++){
+    const f=FOLLOW[i], d=dist(x,y,f.x,f.y);
+    if(d<bd){ bd=d; best=f; }
+  }
+  return best;
+}
+function openTrade(id){
+  tradeId=id; workTab='echange';
+  openOv('#ovWork'); renderWork(); sfx.ui();
+}
+/* ---------- rendu des barres ---------- */
+function bar(v,col){
+  return '<span class="bar"><i style="width:'+clamp(Math.round(v),0,100)+'%;background:'+col+'"></i></span>';
+}
+function needBars(id){
+  const nd=needOf(id);
+  return Object.keys(NEED_TXT).map(function(k){
+    return '<span class="nb"><em>'+NEED_TXT[k]+'</em>'+bar(nd[k],nd[k]<28?'#e0674c':(nd[k]<55?'#c0a06a':'#66c15a'))+'</span>';
+  }).join('');
+}
+const WORK_TABS=[['travail','Travail'],['confiance','Confiance'],['echange','Échanges'],['liens','Liens']];
+const DRIVE_TXT={travail:'au travail',suivre:'te suit',manger:'va chercher de quoi manger',boire:'cherche l’eau',
+  dormir:'se repose au chaud',causer:'discute avec un voisin',troc:'veut te proposer un marché',jeu:'joue près du feu'};
+function driveLabel(f){
+  if(!f) return '—';
+  if(f.kid&&!f.work){ const p=person(f.id); return (p&&kidStage(p)===3)?'traîne au camp':DRIVE_TXT.jeu; }
+  return DRIVE_TXT[f.drive]||DRIVE_TXT.travail;
+}
 function renderWork(){
   const el=$('#workGrid'); if(!el) return;
-  const solved=TRAVELERS.filter(function(t){ return state.solved[t.id]; });
-  const cap=popCap();
-  $('#workCap').textContent='Ton camp loge '+cap+' bras en expédition. Au-delà, ils restent au camp et travaillent pour toi.';
-  if(!solved.length){ el.innerHTML='<p class="sub">Personne au camp encore : suis les traces dorées (<b>M</b> sur la carte).</p>'; return; }
-  el.innerHTML=solved.map(function(t,idx){
-    const job=jobOf(t.id), atCamp=idx>=cap;
+  const people=roster(), cap=popCap();
+  const tb=$('#workTabs');
+  if(tb) tb.innerHTML=WORK_TABS.map(function(t){ return '<button class="tab'+(t[0]===workTab?' on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>'; }).join('');
+  $$('#workTabs [data-tab]').forEach(function(b){
+    b.addEventListener('click',function(){ workTab=b.getAttribute('data-tab'); sfx.ui(); renderWork(); });
+  });
+  $('#workCap').textContent=people.length?('Ton camp loge '+cap+' bras en expédition, '+(homeCap()-homeUsed())+' place(s) libre(s) au foyer, '+state.kids.length+' enfant(s).'):'';
+  if(!people.length){ el.innerHTML='<p class="sub">Personne au camp encore : suis les traces dorées (<b>M</b> sur la carte).</p>'; renderStash(); return; }
+  if(workTab==='travail') el.innerHTML=people.map(function(p,idx){
+    const job=jobOf(p.id), atCamp=idx>=cap;
     const chips=ROLE_KEYS.map(function(r){
-      return '<button class="chip'+(r===job?' lit':'')+'" data-job="'+r+'" data-id="'+t.id+'"><b>'+ROLES[r].n+'</b></button>';
+      return '<button class="chip'+(r===job?' lit':'')+'" data-job="'+r+'" data-id="'+p.id+'"><b>'+ROLES[r].n+'</b></button>';
     }).join('');
-    return '<div class="wcard"><canvas width="34" height="38" data-p="'+t.id+'"></canvas>'+
-      '<div class="wmeta"><h4>'+t.name+'</h4><p class="wlbl">'+t.lang+' · '+t.place+'</p>'+
-      '<p class="wstat">'+(atCamp?'<em>Au camp</em> — '+ROLES[job].d:'<em>À tes côtés</em> — '+ROLES[job].d)+'</p>'+
+    const f=who(p.id), act=driveLabel(f);
+    return '<div class="wcard"><canvas width="34" height="38" data-p="'+p.id+'"></canvas>'+
+      '<div class="wmeta"><h4>'+esc(p.name)+(p.kid?' <em class="kidtag">né au camp</em>':'')+'</h4><p class="wlbl">'+esc(p.lang)+' · '+esc(p.place)+'</p>'+
+      '<p class="wstat">'+(atCamp?'<em>Au camp</em>':'<em>En expédition</em>')+' — '+esc(act)+' · '+esc(ROLES[job].d)+'</p>'+
       '<div class="lex">'+chips+'</div></div></div>';
   }).join('');
+  else if(workTab==='confiance') el.innerHTML=people.map(function(p){
+    const v=trustOf(p.id), t=trustTier(v), nd=needOf(p.id), mo=moodOf(p.id);
+    return '<div class="wcard"><canvas width="34" height="38" data-p="'+p.id+'"></canvas>'+
+      '<div class="wmeta"><h4>'+esc(p.name)+' <em class="tier">« '+t.n+' »</em></h4>'+
+      '<p class="wlbl">Confiance '+v+'/100 · humeur '+mo+'/100</p>'+
+      '<div class="needrow">'+needBars(p.id)+'</div>'+
+      '<p class="wstat">'+esc(adviceFor(p.id))+'</p></div></div>';
+  }).join('');
+  else if(workTab==='echange'){
+    const order=people.slice().sort(function(a,b){ return (a.id===tradeId?-1:0)-(b.id===tradeId?-1:0); });
+    el.innerHTML='<p class="sub" style="margin:0 0 10px">Marchander rapporte du matériel <em>et</em> de la confiance. Offrir sans rien demander en rapporte encore plus.</p>'+
+      order.map(function(p){
+      const o=offerOf(p.id);
+      const gifts=GIFT_FOOD.concat(['water','spear']);
+      return '<div class="wcard'+(p.id===tradeId?' focus':'')+'"><canvas width="34" height="38" data-p="'+p.id+'"></canvas>'+
+      '<div class="wmeta"><h4>'+esc(p.name)+' <em class="tier">'+esc(trustTier(trustOf(p.id)).n)+'</em></h4>'+
+      '<p class="wlbl">Confiance '+trustOf(p.id)+'/100 · '+esc(adviceFor(p.id))+'</p>'+
+      (o?('<p class="wstat">Propose '+o.give.q+' <b>'+ITEMS[o.give.k].n+'</b> contre '+o.want.q+' <b>'+ITEMS[o.want.k].n+'</b> '+
+        '<button class="chip'+(n(o.want.k)>=o.want.q?' lit':'')+'" data-trade="'+p.id+'"><b>Échanger</b></button>'+
+        (n(o.want.k)>=o.want.q?'':'<em class="lack">il te manque '+(o.want.q-n(o.want.k))+' '+ITEMS[o.want.k].n.toLowerCase()+'</em>')+'</p>')
+      :'<p class="wstat">'+(tradedToday(p.id)?'Marché conclu aujourd’hui : la bourse du camp se remplit demain.':'Rien à proposer aujourd’hui : '+esc(offerBlock(p.id))+'.')+'</p>')+
+      '<div class="lex">'+gifts.map(function(k){ return '<button class="chip'+(n(k)>0?'':' dim')+'" data-gift="'+p.id+':'+k+'"><b>'+ITEMS[k].n+' ×'+n(k)+'</b></button>'; }).join('')+'</div>'+
+      '</div></div>';
+    }).join('');
+  }
+  else el.innerHTML=people.map(function(p){
+    const bs=bondsOf(p.id), mate=partnerOf(p.id);
+    return '<div class="wcard"><canvas width="34" height="38" data-p="'+p.id+'"></canvas>'+
+      '<div class="wmeta"><h4>'+esc(p.name)+(mate?' <em class="tier">♥ avec '+esc(person(mate).name)+'</em>':'')+'</h4>'+
+      (bs.length?bs.map(function(b){ return '<p class="wstat">'+esc(person(b.id).name)+' — '+
+        '<span class="bar"><i style="width:'+b.v+'%;background:'+(b.couple?'#e0708a':'#9ed07a')+'"></i></span> '+b.v+
+        (b.couple?' <em class="kidtag">couple</em>':'')+'</p>'; }).join('')
+        :'<p class="wstat">Encore seul·le. Travaille près de quelqu’un ou partage un repas.</p>')+
+      '<p class="wlbl">Le foyer réclame un toit de plus : '+homeUsed()+' occupée(s) sur '+homeCap()+' place(s).</p></div></div>';
+  }).join('');
   $$('#workGrid canvas[data-p]').forEach(function(c){
-    const id=c.getAttribute('data-p'), t=TRAVELERS.filter(function(x){ return x.id===id; })[0];
+    const id=c.getAttribute('data-p'), p=person(id); if(!p) return;
     const g=c.getContext('2d'); g.imageSmoothingEnabled=false;
-    g.drawImage(charSprite(id,t.pal,2,0),5,10,24,26);
+    g.drawImage(charSprite(id,p.pal,2,0),5,10,24,26);
   });
   $$('#workGrid [data-job]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -1751,7 +2258,31 @@ function renderWork(){
       sfx.ui(); renderWork(); saveGame();
     });
   });
+  $$('#workGrid [data-trade]').forEach(function(b){
+    b.addEventListener('click',function(){ doTrade(b.getAttribute('data-trade')); });
+  });
+  $$('#workGrid [data-gift]').forEach(function(b){
+    b.addEventListener('click',function(){ const a=b.getAttribute('data-gift').split(':'); giveGift(a[0],a[1]); });
+  });
   renderStash();
+}
+function offerBlock(id){
+  const role=jobOf(id), want=ROLE_WANT[role]||ROLE_WANT.b;
+  if(!want.some(function(k){ return n(k)>=2; })) return 'il te faut deux pièces de '+ITEMS[want[0]].n.toLowerCase();
+  const give=ROLE_GIVE[role]||ROLE_GIVE.b;
+  if(!give.some(function(k){ return stashOf(k)>=1; })) return 'sa besace est vide, laisse le camp récolter';
+  return 'rien qui vaille le coup aujourd’hui';
+}
+function adviceFor(id){  const nd=needOf(id), t=trustOf(id), mate=partnerOf(id);
+  if(nd.food<30) return 'A faim : offre-lui un repas, ou laisse le camp récolter.';
+  if(nd.water<30) return 'A soif : un peu d’eau et la confiance grimpe vite.';
+  if(nd.rest<30) return 'Épuisé·e : un lit ou un feu le/la remettra.';
+  if(nd.cheer<34) return 'S’ennuie : bâtis un toit, ou laisse-le/la causer un voisin.';
+  if(t<26) return 'Te jauge encore. Tiens tes promesses et nourris-le/la.';
+  if(t<50) return 'Marchande avec toi, mais n’ouvrirait pas son sac.';
+  if(!mate&&homeUsed()>=homeCap()) return 'S’attache à quelqu’un : il manque un toit au foyer.';
+  if(t>=90) return 'Te suivrait jusqu’au bout du monde vert.';
+  return 'Se sent chez soi ici.';
 }
 function renderStash(){
   const el=$('#workStash'); if(!el) return;
@@ -2035,6 +2566,8 @@ function chooseEnc(i){
     litKeys(t.lex[0].w);
     const stars=ENC.errs===0?3:(ENC.errs<=2?2:1);
     state.solved[t.id]={stars:stars,blind:ENC.mode==='blind'};
+    state.trust[t.id]=clamp(18+stars*6+(ENC.mode==='blind'&&ENC.errs===0?10:0),0,100);
+    needOf(t.id);
     sfx.quest();
     const res=$('#encRes');
     res.innerHTML='<p class="stars">'+'★'.repeat(stars)+'<i>'+'★'.repeat(3-stars)+'</i></p>'+
@@ -2115,6 +2648,25 @@ function renderCodex(){
   $$('#codexGrid [data-say]').forEach(function(b){
     b.addEventListener('click',function(){ const a=b.getAttribute('data-say').split('|'); speak(a[0],a[1],b); if(!pickVoice(a[1])) toast('Pas de voix pour cette langue sur ce poste'); });
   });
+  const fo=$('#codexHome');
+  if(fo){
+    const couples=Object.keys(state.couple), kids=state.kids;
+    if(!couples.length&&!kids.length){ fo.innerHTML=''; fo.style.display='none'; }
+    else{
+      fo.style.display='';
+      fo.innerHTML='<p class="step" style="margin-top:26px">Ce que le camp a produit d’autre que des ressources</p>'+
+        '<h2>LE FOYER</h2>'+
+        '<div class="homelist">'+
+        couples.map(function(k){ const a=person(k.split('|')[0]), b=person(k.split('|')[1]); if(!a||!b) return '';
+          return '<p class="home"><b>'+esc(a.name)+'</b> ♥ <b>'+esc(b.name)+'</b> — ensemble depuis le jour '+state.couple[k]+
+            ' · confiance '+trustOf(a.id)+' / '+trustOf(b.id)+'</p>'; }).join('')+
+        kids.map(function(c){ const pa=person(c.p[0]), mo=person(c.p[1]);
+          return '<p class="home"><b>'+esc(c.name)+'</b> — '+esc(KID_STAGES[kidStage(c)])+' de '+esc(pa?pa.name:'?')+' et '+esc(mo?mo.name:'?')+
+            ', né·e le jour '+c.born+' · '+esc(adviceFor(c.id))+'</p>'; }).join('')+
+        '<p class="home" style="color:#8fae8b">Le foyer tient sur '+homeUsed()+' place(s) sur '+homeCap()+'. Une maison de branchage en ouvre deux de plus.</p>'+
+        '</div>';
+    }
+  }
 }
 
 /* ==========================================================================
@@ -2150,6 +2702,10 @@ function contextHint(){
   }
   if(P.boat) return '<b>ESPACE</b> accoster · maintiens <b>ESPACE</b> pour pêcher au large · <b>F</b> / <b>G</b>';
   const f=front(), i=f.y*TW+f.x, o=objAt(f.x,f.y);
+  if([O.NONE,O.STUMP,O.WALL,O.ROOF,O.CATCH,O.CHEST,O.TORCH,O.HOUSE].indexOf(o)>=0){
+    const near=nearestPerson(P.x,P.y,TS*1.7);
+    if(near) return '<b>ESPACE</b> '+esc(near.name)+' — '+(offerOf(near.id)?'marché du jour':'discuter ou offrir');
+  }
   if(o===O.BOAT) return '<b>ESPACE</b> Monter sur le radeau';
   if(o===O.TRAP) return ohp[i]>0?'<b>ESPACE</b> Récolter le piège':'Piège tendu — il se remplit la nuit';
   if(o===O.HOUSE) return 'La maison abrite ta caravane · <b>T</b> pour les tâches';
@@ -2222,6 +2778,36 @@ function shadow(g,x,y,w){
   g.fillRect(Math.round(x-w/2),Math.round(y-1),Math.round(w),2);
   g.fillRect(Math.round(x-w/2+2),Math.round(y+1),Math.round(w-4),1);
 }
+function drawKid(g,k,i){
+  const st=kidStage(k), sc=[0.52,0.68,0.84,1][st];
+  const v=(i%2)?2:0;
+  shadow(g,k.x,k.y,Math.round(9*sc));
+  const s=charSprite(k.id+st,k.pal,v,Math.floor(now*2.4+i)%2);
+  const w=Math.round(12*sc), h=Math.round(13*sc);
+  g.imageSmoothingEnabled=false;
+  g.drawImage(s,Math.round(k.x-w/2),Math.round(k.y-h));
+}
+function drawMark(g,x,y,f){
+  const blink=Math.floor(now*4)%2;
+  if(f.asleep>0){
+    g.fillStyle='#dfe9d6';
+    g.fillRect(x+3,y-2,2,2); g.fillRect(x+6,y-5,2,2);
+    return;
+  }
+  if(f.eat>0){ g.fillStyle='#e0674c'; g.fillRect(x-1,y-3,3,3); g.fillStyle='#66c15a'; g.fillRect(x+2,y-4,2,2); return; }
+  if(f.drink>0){ g.fillStyle='#6fb3d9'; g.fillRect(x,y-4,2,4); return; }
+  if(f.chat>0){
+    g.fillStyle='#0a1a12'; g.fillRect(x-6,y-8,13,8);
+    g.fillStyle='#dfe9d6'; g.fillRect(x-5,y-7,11,6);
+    g.fillStyle='#16281d';
+    g.fillRect(x-3,y-5,2,2); g.fillRect(x,y-5,2,2); g.fillRect(x+3,y-5,2,2);
+    return;
+  }
+  if(f.hint){
+    g.fillStyle=blink?'#f2c866':'#c8a24a';
+    g.fillRect(x-1,y-8,3,6); g.fillRect(x-1,y-1,3,2);
+  }
+}
 function drawChar(g,key,pal,x,y,dir,step){
   const v=dir===3?1:(dir===0?0:2);
   shadow(g,x,y,9);
@@ -2285,6 +2871,17 @@ function drawWorld(){
   /* caravane */
   FOLLOW.forEach(function(f,i){
     ents.push({y:f.y,f:function(){ drawChar(ctx,f.id,f.pal,f.x,f.y,f.work?2:0,Math.floor(now*3+i)%2); }});
+  });
+  /* enfants du camp */
+  KID.forEach(function(k,i){
+    ents.push({y:k.y,f:function(){ drawKid(ctx,k,i); }});
+  });
+  /* signes au-dessus des têtes : causerie, marché proposé, sommeil */
+  FOLLOW.forEach(function(f){
+    if(f.chat>0||f.hint||f.asleep>0||f.eat>0||f.drink>0) ents.push({y:f.y-15,f:function(){ drawMark(ctx,f.x,f.y-15,f); }});
+  });
+  KID.forEach(function(k){
+    if(k.chat>0) ents.push({y:k.y-13,f:function(){ drawMark(ctx,k.x,k.y-13,k); }});
   });
   /* bêtes */
   ANI.forEach(function(a){
@@ -2434,15 +3031,6 @@ function drawMinimap(){
   if(l<0.95){ mmg.fillStyle='rgba(10,20,48,'+((1-l)*0.5).toFixed(2)+')'; mmg.fillRect(0,0,TW,TH); }
   mmg.fillStyle='#fff'; mmg.fillRect(Math.round(P.x/TS)-1,Math.round((P.y-6)/TS)-1,2,2);
 }
-function updateFollowers(dt){
-  for(let i=0;i<FOLLOW.length;i++){
-    const f=FOLLOW[i];
-    if(f.work){ campWorker(f,dt); continue; }
-    const idx=Math.min(HIST.length-1,(i+2)*14);
-    const want=HIST[idx]||{x:P.x,y:P.y-6};
-    followWalk(f,dt,want);
-  }
-}
 function update(dt){
   readKeys(dt);
   if(P.tool>0) P.tool=Math.max(0,P.tool-dt);
@@ -2470,6 +3058,7 @@ function update(dt){
   HIST.unshift({x:P.x,y:P.y-6});
   if(HIST.length>420) HIST.pop();
   updateFollowers(dt);
+  socialTick(dt);
   checkEncounters();
   updateHUD(dt);
 }
@@ -2504,6 +3093,8 @@ function openFin(){
     : s>=16?'Passeur de langues · le camp chante dans neuf bouches'
     : s>=9?'Cœur ouvert · le monde a recommencé à parler'
     : 'Voyageur silencieux · chacun t’a compris quand même';
+  const fam=Object.keys(state.couple).length, kids=state.kids.length;
+  if(fam||kids) $('#certRank').textContent+=' · '+fam+' foyer'+(fam>1?'s':'')+', '+kids+' enfant'+(kids>1?'s':'')+' né'+(kids>1?'s':'')+' au camp';
   openOv('#ovFin').classList.add('is-open');
   startConfetti();
 }
@@ -2590,6 +3181,8 @@ function newWorld(){
   state.inv={wood:2};
   state.prog=Object.assign({},DEF_PROG);
   state.job={}; state.stash={}; state.camp=null; state.anim=[];
+  state.trust={}; state.need={}; state.bond={}; state.couple={}; state.kids=[]; state.offer={};
+  KID.length=0;
   state.built=0; state.quest=0; state.solved={};
   spawnAnimals(26);
 }
