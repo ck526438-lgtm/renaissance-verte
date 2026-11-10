@@ -7,3 +7,6 @@ tmp-*
 /shot.html
 /gif.html
 /diag.html
+# Appli de bureau
+/node_modules/
+/dist/
