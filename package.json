@@ -1,0 +1,89 @@
+{
+  "name": "renaissance-verte",
+  "productName": "Renaissance Verte",
+  "version": "2.0.0",
+  "description": "Survie pixel 2.5D dans un monde vert : bunkers enfouis, sites perdus, arsenal, loups, camp vivant.",
+  "main": "desktop/main.js",
+  "author": "ck526438-lgtm",
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/ck526438-lgtm/renaissance-verte",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:linux": "electron-builder --linux --publish never"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "io.github.ck526438lgtm.renaissanceverte",
+    "productName": "Renaissance Verte",
+    "artifactName": "Renaissance-Verte-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "index.html",
+      "assets/**",
+      "desktop/**",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "portable": {
+      "artifactName": "Renaissance-Verte-${version}-portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Renaissance Verte"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.adventure-games",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Game",
+      "icon": "build/icon.png",
+      "maintainer": "ck526438-lgtm <ck526438-lgtm@users.noreply.github.com>",
+      "synopsis": "Survie pixel 2.5D dans un monde vert",
+      "syncDesktopName": true
+    }
+  },
+  "desktopName": "renaissance-verte.desktop"
+}
