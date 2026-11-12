@@ -3,7 +3,7 @@ name: Applis (Windows, macOS, Linux, Android)
 on:
   push:
     tags: ['v*']
-  pull_request:
+    branches: [main, refonte-3d]
   workflow_dispatch:
 
 permissions:
@@ -70,7 +70,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push'
     needs: [desktop, android]
     runs-on: ubuntu-latest
     steps:
@@ -78,7 +78,28 @@ jobs:
         with:
           path: out
           merge-multiple: true
-      - uses: softprops/action-gh-release@v2
+      - name: Publier (version officielle sur un tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
         with:
           files: out/*
           generate_release_notes: true
+      - name: Publier la bêta (téléchargement direct, sans compte GitHub)
+        if: "!startsWith(github.ref, 'refs/tags/v')"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v3.0.0-beta
+          target_commitish: ${{ github.sha }}
+          name: Renaissance Verte 3.0 (bêta)
+          prerelease: true
+          files: out/*
+          body: |
+            Version bêta fabriquée automatiquement depuis la branche `${{ github.ref_name }}`.
+
+            | Système | Fichier |
+            |---|---|
+            | Windows (installateur) | `Renaissance-Verte-…-win-x64.exe` |
+            | Windows (sans installation) | `Renaissance-Verte-…-portable.exe` |
+            | macOS | `Renaissance-Verte-…-mac-….dmg` |
+            | Linux | `….AppImage` ou `….deb` |
+            | Android | `Renaissance-Verte-…-android.apk` |

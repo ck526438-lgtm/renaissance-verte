@@ -57,9 +57,7 @@ Disponible en **application** pour **Windows, macOS, Linux et Android**.
 
 ## 💾 Installer l'application
 
-Les applis sont fabriquées automatiquement par GitHub Actions. On les trouve :
-- dans l'onglet **[Actions](https://github.com/ck526438-lgtm/renaissance-verte/actions)** → dernière exécution réussie → *Artifacts* ;
-- et dans les **[Releases](https://github.com/ck526438-lgtm/renaissance-verte/releases)** dès qu'une version `v3.0.0` est publiée.
+👉 **[Télécharger les applis](https://github.com/ck526438-lgtm/renaissance-verte/releases)** — ouvre la release *Renaissance Verte 3.0 (bêta)* (ou la plus récente), section **Assets**, et choisis le fichier de ton système. Pas besoin de compte GitHub.
 
 | Système | Fichier | Installation |
 |---|---|---|
