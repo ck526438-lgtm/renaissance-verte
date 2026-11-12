@@ -10,3 +10,4 @@ tmp-*
 # Appli de bureau
 /node_modules/
 /dist/
+/release/

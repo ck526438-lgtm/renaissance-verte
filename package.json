@@ -1,36 +1,43 @@
 {
   "name": "renaissance-verte",
   "productName": "Renaissance Verte",
-  "version": "2.0.0",
-  "description": "Survie pixel 2.5D dans un monde vert : bunkers enfouis, sites perdus, arsenal, loups, camp vivant.",
+  "version": "3.0.0",
+  "description": "Survie en 3D : saisons, santé, ferme, cuisine, combat, bunkers — Windows, macOS, Linux, Android.",
   "main": "desktop/main.js",
   "author": "ck526438-lgtm",
   "license": "UNLICENSED",
   "homepage": "https://github.com/ck526438-lgtm/renaissance-verte",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder --publish never",
-    "dist:win": "electron-builder --win --publish never",
-    "dist:mac": "electron-builder --mac --publish never",
-    "dist:linux": "electron-builder --linux --publish never"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite build && electron .",
+    "dist": "vite build && electron-builder --publish never",
+    "dist:win": "vite build && electron-builder --win --publish never",
+    "dist:mac": "vite build && electron-builder --mac --publish never",
+    "dist:linux": "vite build && electron-builder --linux --publish never",
+    "android": "vite build && cap sync android",
+    "android:apk": "vite build && cap sync android && cd android && ./gradlew assembleDebug"
   },
   "devDependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/cli": "8.6.0",
     "electron": "^45.2.3",
-    "electron-builder": "^26.18.0"
+    "electron-builder": "^26.18.0",
+    "vite": "8.3.8"
   },
   "build": {
     "appId": "io.github.ck526438lgtm.renaissanceverte",
     "productName": "Renaissance Verte",
     "artifactName": "Renaissance-Verte-${version}-${os}-${arch}.${ext}",
     "files": [
-      "index.html",
-      "assets/**",
+      "dist/**",
       "desktop/**",
       "package.json"
     ],
     "directories": {
       "buildResources": "build",
-      "output": "dist"
+      "output": "release"
     },
     "win": {
       "target": [
@@ -81,9 +88,16 @@
       "category": "Game",
       "icon": "build/icon.png",
       "maintainer": "ck526438-lgtm <ck526438-lgtm@users.noreply.github.com>",
-      "synopsis": "Survie pixel 2.5D dans un monde vert",
+      "synopsis": "Survie en 3D dans une île vivante",
       "syncDesktopName": true
     }
   },
-  "desktopName": "renaissance-verte.desktop"
+  "desktopName": "renaissance-verte.desktop",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/status-bar": "8.0.4",
+    "three": "0.187.0"
+  }
 }
