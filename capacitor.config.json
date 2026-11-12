@@ -1,0 +1,12 @@
+{
+  "appId": "io.github.ck526438lgtm.renaissanceverte",
+  "appName": "Renaissance Verte",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#06100b",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "StatusBar": { "overlaysWebView": true }
+  }
+}

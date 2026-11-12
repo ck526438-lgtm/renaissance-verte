@@ -1,5 +1,5 @@
 /* Renaissance Verte — fenêtre de bureau (Windows, macOS, Linux).
-   Le jeu reste le même index.html : l'appli ne fait que l'ouvrir dans sa propre fenêtre. */
+   L'appli ouvre le jeu 3D construit par Vite (dossier dist/) dans sa propre fenêtre. */
 const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
 
@@ -11,13 +11,13 @@ function createWindow() {
     width: 1280, height: 800, minWidth: 640, minHeight: 400,
     title: 'Renaissance Verte',
     backgroundColor: '#06100b',
-    icon: path.join(__dirname, '..', 'assets', 'logo.png'),
+    icon: path.join(__dirname, '..', 'dist', 'icon-512.png'),
     autoHideMenuBar: true,
     show: false,
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false }
   });
   Menu.setApplicationMenu(null);
-  win.loadFile(path.join(__dirname, '..', 'index.html'));
+  win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   win.once('ready-to-show', () => win.show());
   /* F11 / Alt+Entrée : plein écran — F12 : outils de développement */
   win.webContents.on('before-input-event', (e, input) => {
